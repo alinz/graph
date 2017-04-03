@@ -1,0 +1,21 @@
+{
+    "memo": "afa409b224f3f63200f78a8037bc732cb9c20a88f321912a14a83d170a163058",
+    "projects": [
+        {
+            "name": "github.com/boltdb/bolt",
+            "branch": "master",
+            "revision": "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "golang.org/x/sys",
+            "branch": "master",
+            "revision": "9a7256cb28ed514b4e1e5f68959914c4c28a92e0",
+            "packages": [
+                "unix"
+            ]
+        }
+    ]
+}
