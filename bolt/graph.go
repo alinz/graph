@@ -11,19 +11,20 @@ import (
 /*
 
 	Graph {
-		ValueToVertex: {
-			<value>: <Vertex ID>
+		NameToVertex: {
+			<name>: <vertex_id>
 		}
 
-		EdgeValueToVerticies: {
-			<value>: {
-				<seq: ID>: <Vertex ID>
+		NameToEdge: {
+			<name>: {
+				<seq:_>: <edge_id>
 			}
 		}
 
 		Verticies: {
-			<seq: Vertex ID>: {
-				Value: <value>
+			<seq:vertex_id>: {
+				Name: []byte
+				Value: []byte
 				Edges: {
 					<seq: ID>: <seq: Edge ID>
 				}
@@ -31,9 +32,11 @@ import (
 		}
 
 		Edges: {
-			<seq: Edge ID>: {
-				Value: <value>
-				VertexID: <seq: Vertex ID>
+			<seq:edge_id>: {
+				Name: []byte
+				Value: []byte
+				vertex_a: <vertex_id>
+				vertex_b: <vertex_id>
 			}
 		}
 	}
