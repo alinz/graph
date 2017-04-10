@@ -1,39 +1,86 @@
 package graph
 
-// Vertex is a simple interface which contains Value and Edges
-type Vertex interface {
-	Name() ([]byte, error)
-	SetName([]byte) error
-	Value() ([]byte, error)
-	SetValue([]byte) error
-	Edges() ([]Edge, error)
-}
+import (
+	"fmt"
+)
 
-// Edge is a simple interface which represents an edge
+var (
+	// ErrDuplicateEdge it happens when an edge tries to be added to a vertex which already has the same edge
+	// each edge must have a label. this lable will unique per 2 connected verties.
+	ErrDuplicateEdge = fmt.Errorf("source vertex already has a connection with same label")
+	//ErrEdgeNotFound if an edge with given label does not exist
+	ErrEdgeNotFound = fmt.Errorf("vertex does not have reqsuetd edge")
+	// ErrDuplicateVertex each graph can't have the same vertex with the same label
+	ErrDuplicateVertex = fmt.Errorf("vertex with given name already exists in this graph")
+	// ErrVertexNotFound if the given vertex is not part of that graph
+	ErrVertexNotFound = fmt.Errorf("vertex does not found in this graph")
+	// ErrNotSameType if the given vertex/edge created from different backend.
+	// for example, you can not pass the non-boltdb backend edge and vertex to
+	// boltdb graph.
+	ErrNotSameType = fmt.Errorf("not the same type as backend")
+)
+
+// Edge this is base structure for Edge
 type Edge interface {
-	Name() ([]byte, error)
-	SetName([]byte) error
-	Value() ([]byte, error)
-	SetValue([]byte) error
-	Vertex() Vertex
+	// SetValue it sets value to Edge
+	SetValue(value []byte)
+
+	// Value it returns the value of target edge
+	Value() []byte
 }
 
-// Graph is the basic interface represents the graph,
-// graph is backed by a reliable backend such as Boltdb or ...
-type Graph interface {
-	// Vertex does 2 things, find an existing Vertex with the same value or create one oterwise
-	Vertex([]byte) (Vertex, error)
-	// Edge creates a brand new Edge
-	Edge([]byte) (Edge, error)
+// Vertex this is a base structure for vertex
+type Vertex interface {
+	// SetValue this sets value to target vertex
+	SetValue(value []byte)
 
-	// Connect tries to connect 2 vertices with given edge
-	// for bidirectional connection this method must be called twice with rotating vertices
-	Connect(Vertex, Edge, Vertex) error
-	// RemoveEdge because edge needs to be removed from Vertex in backend, it requires vertex to be
-	// pass as first argument, so backend can safely remove the edge
-	RemoveEdge(Edge)
-	// RemoveVertex will remove Vertex from graph and remove all edges to and from this vertex
-	RemoveVertex(Vertex)
-	// Close closes and cleans up the underneath data
-	Close() error
+	// Value it returns the value of vertex
+	Value() []byte
+
+	// Connects it connects a -[ e ]-> b with edge e
+	//
+	// errors that might happen
+	// - source vertex already has a connection with same label
+	// - not the same type as backend
+	Connects(vertex Vertex) (Edge, error)
+
+	// Edges it returns all edges
+	Edges(label []byte) []Edge
+
+	// RemoveEdge it removes given edge from vertex
+	//
+	// errors that might happen
+	// - vertex does not have reqsuetd edge
+	// - not the same type as backend
+	RemoveEdge(e Edge) error
+}
+
+// SubGraph this is a base structure for graph
+type SubGraph interface {
+	// AddVertex this adds a vertex to Graph.
+	//
+	// errors that might happen
+	// - vertex with given name already exists in this graph
+	// - not the same type as backend
+	AddVertex(vertex Vertex) error
+
+	// Vertex this finds vertex by given name in the graph
+	//
+	// errors that might happen
+	// - give name doesn not found in this graph
+	Vertex(name []byte) (Vertex, error)
+
+	// RemoveVertex removes vertex from target graph
+	//
+	// errors that might happen
+	// - vertex does not found in this graph
+	// - not the same type as backend
+	RemoveVertex(vertex Vertex) error
+}
+
+// Graph this is a base structure for Graph
+type Graph interface {
+	// SubGraph will create a logical sub graph. The main use case of sub graph is
+	// to label verticies which can be query and find faster.
+	SubGraph(label []byte) SubGraph
 }
