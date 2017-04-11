@@ -50,12 +50,6 @@ func (g *boltGraph) CreateVertex(name []byte) (graph.Vertex, error) {
 
 		idInBytes := uint64tobyte(id)
 
-		// verticies bucket (name -> vertex_id)
-		err = verticies.Put(name, idInBytes)
-		if err != nil {
-			return err
-		}
-
 		// we are creating a bucket with vertex_id as name
 		// all the information about that vertex will be save inside
 		// this bucket
@@ -64,8 +58,15 @@ func (g *boltGraph) CreateVertex(name []byte) (graph.Vertex, error) {
 			return err
 		}
 
+		// verticies bucket (name -> vertex_id)
+		err = verticies.Put(name, idInBytes)
+		if err != nil {
+			return err
+		}
+
 		vertex = &boltVertex{
 			idInBytes,
+			g.db,
 		}
 
 		return nil

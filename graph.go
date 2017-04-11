@@ -32,10 +32,10 @@ type Edge interface {
 // Vertex this is a base structure for vertex
 type Vertex interface {
 	// SetValue this sets value to target vertex
-	SetValue(value []byte)
+	SetValue(value []byte) error
 
 	// Value it returns the value of vertex
-	Value() []byte
+	Value() ([]byte, error)
 
 	// Connects it connects a -[ e ]-> b with edge e
 	//
@@ -45,7 +45,7 @@ type Vertex interface {
 	Connects(vertex Vertex) (Edge, error)
 
 	// Edges it returns all edges
-	Edges(label []byte) []Edge
+	Edges(label []byte) ([]Edge, error)
 
 	// RemoveEdge it removes given edge from vertex
 	//
