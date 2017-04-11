@@ -7,6 +7,7 @@ import (
 
 var (
 	vertexValueKey = []byte("value")
+	vertexEdgesKey = []byte("edges")
 )
 
 type boltVertex struct {
@@ -62,7 +63,74 @@ func (v *boltVertex) Value() ([]byte, error) {
 // errors that might happen
 // - source vertex already has a connection with same label
 func (v *boltVertex) Connects(vertex graph.Vertex) (graph.Edge, error) {
-	return nil, nil
+	var edge graph.Edge
+
+	targetVertex, ok := vertex.(*boltVertex)
+	if !ok {
+		return nil, graph.ErrNotSameType
+	}
+
+	err := v.db.Update(func(tx *bolt.Tx) error {
+		// we need to make sure that the current vertex exists
+		srcBucket := tx.Bucket(v.id)
+		if srcBucket == nil {
+			return graph.ErrVertexNotFound
+		}
+
+		// we need to make sure that the target vertex exists
+		desBucket := tx.Bucket(targetVertex.id)
+		if desBucket == nil {
+			return graph.ErrVertexNotFound
+		}
+
+		// we get access to edges bucket of src vertex.
+		// src edges bucket contains a seq id as key and value points to global seq bucket
+		// which contains everything related to this particulat edge
+		srcEdgesBucket, err := srcBucket.CreateBucketIfNotExists(vertexEdgesKey)
+		if err != nil {
+			return err
+		}
+
+		edges := tx.Bucket(globalEdgesBucketName)
+
+		// we are using sequence id to reference this vertex
+		// everywhere. It uses less memory in average, 8 bytes
+		id, err := edges.NextSequence()
+		if err != nil {
+			return err
+		}
+
+		idInBytes := uint64tobyte(id)
+
+		edgeBucket, err := edges.CreateBucket(idInBytes)
+		if err != nil {
+			return err
+		}
+
+		err = edgeBucket.Put(edgeVertexA, v.id)
+		if err != nil {
+			return err
+		}
+
+		err = edgeBucket.Put(edgeVertexB, targetVertex.id)
+		if err != nil {
+			return err
+		}
+
+		id, err = srcEdgesBucket.NextSequence()
+		if err != nil {
+			return err
+		}
+
+		err = srcEdgesBucket.Put(uint64tobyte(id), idInBytes)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return edge, err
 }
 
 // Edges it returns all edges

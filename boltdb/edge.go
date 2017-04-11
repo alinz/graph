@@ -1,5 +1,12 @@
 package boltdb
 
+var (
+	edgeNameKey  = []byte("name")
+	edgeValueKey = []byte("value")
+	edgeVertexA  = []byte("vertex_a")
+	edgeVertexB  = []byte("vertex_b")
+)
+
 type boltEdge struct {
 }
 

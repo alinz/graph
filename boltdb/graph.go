@@ -5,7 +5,10 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-var vericiesBucketName = []byte("verticies_bucket_name")
+var (
+	globalVericiesBucketName = []byte("verticies_bucket_name")
+	globalEdgesBucketName    = []byte("edges_bucket_name")
+)
 
 type boltGraph struct {
 	db *bolt.DB
@@ -34,7 +37,7 @@ func (g *boltGraph) CreateVertex(name []byte) (graph.Vertex, error) {
 	var vertex graph.Vertex
 
 	err := g.db.Update(func(tx *bolt.Tx) error {
-		verticies := tx.Bucket(vericiesBucketName)
+		verticies := tx.Bucket(globalVericiesBucketName)
 
 		// check if name is unique
 		if verticies.Get(name) != nil {
@@ -83,8 +86,18 @@ func New(path string) (graph.Graph, error) {
 		return nil, err
 	}
 
+	// this update creates couple of global buckets
 	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(vericiesBucketName)
+		_, err := tx.CreateBucketIfNotExists(globalVericiesBucketName)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.CreateBucketIfNotExists(globalEdgesBucketName)
+		if err != nil {
+			return err
+		}
+
 		return err
 	})
 
