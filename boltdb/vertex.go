@@ -3,6 +3,7 @@ package boltdb
 import "github.com/alinz/graph"
 
 type boltVertex struct {
+	id []byte
 }
 
 // SetValue this sets value to target vertex

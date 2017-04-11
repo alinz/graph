@@ -1,8 +1,12 @@
 package boltdb
 
-import "github.com/alinz/graph"
+import (
+	"github.com/alinz/graph"
+	"github.com/boltdb/bolt"
+)
 
 type boltSubGraph struct {
+	db *bolt.Bucket
 }
 
 // AddVertex this adds a vertex to Graph.

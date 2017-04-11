@@ -82,5 +82,15 @@ type SubGraph interface {
 type Graph interface {
 	// SubGraph will create a logical sub graph. The main use case of sub graph is
 	// to label verticies which can be query and find faster.
-	SubGraph(label []byte) SubGraph
+	//
+	// errors that might happen
+	// - mostly the backend implementation error
+	CreateSubGraph(label []byte) (SubGraph, error)
+
+	// CreateVertex all the new vertex must be created here. the given name must
+	// be unique.
+	//
+	// errors that might happen
+	// - duplicate vertex name found
+	CreateVertex(name []byte) (Vertex, error)
 }
