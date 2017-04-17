@@ -90,7 +90,7 @@ func (sg *boltSubGraph) AddVertex(vertex graph.Vertex) error {
 			return err
 		}
 
-		subGraphVertices, err := subGraphBucket.CreateBucketIfNotExists(names.SubGraphsVertices)
+		subGraphVertices, err := subGraphBucket.CreateBucketIfNotExists(names.SubGraphVertices)
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,37 @@ func (sg *boltSubGraph) AddVertex(vertex graph.Vertex) error {
 }
 
 func (sg *boltSubGraph) Vertex(name []byte) (graph.Vertex, error) {
-	return nil, nil
+	var vertex graph.Vertex
+
+	sg.db.Update(func(tx *bolt.Tx) error {
+		subGraphsBucket, err := tx.CreateBucketIfNotExists(names.SubGraphs)
+		if err != nil {
+			return err
+		}
+
+		subGraphBucket := subGraphsBucket.Bucket(sg.id)
+		if subGraphBucket == nil {
+			return graph.ErrNotFound
+		}
+
+		subGraphVerticesBucket, err := subGraphBucket.CreateBucketIfNotExists(names.SubGraphVertices)
+		if err != nil {
+			return err
+		}
+
+		vertexID := subGraphVerticesBucket.Get(name)
+		if vertexID == nil {
+			return graph.ErrNotFound
+		}
+
+		vertex = &boltVertex{
+			id: vertexID,
+		}
+
+		return nil
+	})
+
+	return vertex, nil
 }
 
 func (sg *boltSubGraph) RemoveVertex(vertex graph.Vertex) error {
@@ -177,9 +207,9 @@ func createSubGraphIfNotExists(name []byte, tx *bolt.Tx) (graph.SubGraph, error)
 // Note: the return value []byte is only valid for the duration of Tx. make
 // sure to copy the value using `bytesCopy`
 func getSubGraphName(id []byte, tx *bolt.Tx) ([]byte, error) {
-	subGraphsBucket, err := tx.CreateBucketIfNotExists(names.SubGraphs)
-	if err != nil {
-		return nil, err
+	subGraphsBucket := tx.Bucket(names.SubGraphs)
+	if subGraphsBucket == nil {
+		return nil, graph.ErrNotFound
 	}
 
 	subGraphBucket := subGraphsBucket.Bucket(id)

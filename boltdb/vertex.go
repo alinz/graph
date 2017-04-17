@@ -71,9 +71,9 @@ func createVertex(name []byte, tx *bolt.Tx) (graph.Vertex, error) {
 }
 
 func getVertex(name []byte, tx *bolt.Tx) (graph.Vertex, error) {
-	vertexIndexBucket, err := tx.CreateBucketIfNotExists(names.VertexIndex)
-	if err != nil {
-		return nil, err
+	vertexIndexBucket := tx.Bucket(names.VertexIndex)
+	if vertexIndexBucket == nil {
+		return nil, graph.ErrNotFound
 	}
 
 	vertexID := vertexIndexBucket.Get(name)
@@ -93,9 +93,9 @@ func getVertex(name []byte, tx *bolt.Tx) (graph.Vertex, error) {
 // Note: the return value []byte is only valid for the duration of Tx. make
 // sure to copy the value using `bytesCopy`
 func getVertexName(id []byte, tx *bolt.Tx) ([]byte, error) {
-	verticiesBucket, err := tx.CreateBucketIfNotExists(names.Verticies)
-	if err != nil {
-		return nil, err
+	verticiesBucket := tx.Bucket(names.Verticies)
+	if verticiesBucket == nil {
+		return nil, graph.ErrNotFound
 	}
 
 	vertexBucket := verticiesBucket.Bucket(id)
