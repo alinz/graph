@@ -8,10 +8,21 @@ import (
 
 type boltVertex struct {
 	id []byte
+	db *bolt.DB
 }
 
 func (v *boltVertex) Name() ([]byte, error) {
-	return nil, nil
+	var err error
+	var name []byte
+
+	err = v.db.View(func(tx *bolt.Tx) error {
+		value, err := getVertexName(v.id, tx)
+		name = bytesCopy(value)
+
+		return err
+	})
+
+	return name, err
 }
 
 func (v *boltVertex) Value() ([]byte, error) {
@@ -67,6 +78,7 @@ func createVertex(name []byte, tx *bolt.Tx) (graph.Vertex, error) {
 
 	return &boltVertex{
 		id: vertexID,
+		db: tx.DB(),
 	}, nil
 }
 
@@ -83,6 +95,7 @@ func getVertex(name []byte, tx *bolt.Tx) (graph.Vertex, error) {
 
 	return &boltVertex{
 		id: vertexID,
+		db: tx.DB(),
 	}, nil
 }
 
