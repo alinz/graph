@@ -105,3 +105,8 @@ func getVertexName(id []byte, tx *bolt.Tx) ([]byte, error) {
 
 	return vertexBucket.Get(names.VertexName), nil
 }
+
+// removeVertex it removes the vertex fully from graph
+func removeVertex(id []byte, tx *bolt.Tx) error {
+	return nil
+}

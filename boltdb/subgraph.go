@@ -169,6 +169,11 @@ func (sg *boltSubGraph) Vertex(name []byte) (graph.Vertex, error) {
 }
 
 func (sg *boltSubGraph) RemoveVertex(vertex graph.Vertex) error {
+	// nativeVertex, ok := vertex.(*boltVertex)
+	// if !ok {
+	// 	return graph.ErrNotNative
+	// }
+
 	return nil
 }
 

@@ -20,7 +20,7 @@ EdgeIdsByName: {
 SubGraphs: {
   <seq:subgraph.id>: {
     Name: []byte
-    Value: []byte]
+    Value: []byte
     Vertices: {
       <vertex.name>: <vertex.id>
       ...

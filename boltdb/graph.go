@@ -34,7 +34,14 @@ func (g *boltGraph) CreateVertex(name []byte) (graph.Vertex, error) {
 }
 
 func (g *boltGraph) RemoveVertex(vertex graph.Vertex) error {
-	return nil
+	nativeVertex, ok := vertex.(*boltVertex)
+	if !ok {
+		return graph.ErrNotNative
+	}
+
+	return g.db.Update(func(tx *bolt.Tx) error {
+		return removeVertex(nativeVertex.id, tx)
+	})
 }
 
 func (g *boltGraph) CreateEdge(name []byte) (graph.Edge, error) {
